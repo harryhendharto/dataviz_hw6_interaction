@@ -69,18 +69,23 @@ dance -->
             max-width: 1000px;
             margin: 0 auto;
         }
+
+        .highlight {
+            color: black;
+        }
     </style>
 </head>
 
 <body>
     <div class="chart-container">
         <h1 class="headline">
-            Healthcare by income in 2020 asdasd
+            <span class='highlight'>2019</span>
         </h1>
 
         <svg width="1050px" height="575px">
+            
         </svg>
-        <p class="source">Source: Current Population Survey, analysis by Matt Bruenig</p>
+        <p class="source">Note:</p>
 
     </div>
 </body>
@@ -102,7 +107,7 @@ dance -->
 
         let margin = { top: 10, right: 10, bottom: 10, left: 30 };
 
-        let year_state = 2009;
+        let year_state = 2020;
 
         let sel_cols = [
             "Medicaid",
@@ -137,10 +142,6 @@ dance -->
         let series2020 = d3.stack().keys(sel_cols)(d2020);
         let series2009 = d3.stack().keys(sel_cols)(d2009);
 
-        data.forEach(d => {
-                d.year = +d.year
-            })
-
 
     //     // https://github.com/d3/d3-scale#ordinal-scales
         let color = d3.scaleOrdinal()
@@ -160,6 +161,28 @@ dance -->
             .x(d => x(d.data.Percentile))
             .y0(d => y(d[0]))
             .y1(d => y(d[1]))
+
+        let area2 = d3.area()
+            .x(d => x(d.data.Percentile))
+            .y0(d => y(d[0]))
+            .y1(d => y(d[1]))
+
+        let hed = d3.select(".headline")
+
+        let areas = svg.append("g")
+            .attr("class", "areas")
+
+        areas
+            .selectAll("path")
+            .data(series2020)
+            .join("path")
+            .attr("class", d =>  {
+                console.log(d)
+                return d.key
+            })
+            .attr("fill", d => color(d.key))
+            .attr("d", area)
+
 
         let xAxisSettings = d3.axisBottom(x)
             .tickSize(6)
@@ -186,21 +209,6 @@ dance -->
             .attr("class", "y axis")
             .call(yAxisSettings)
             .call(g => g.selectAll(".domain").remove())
-
-        let areas = svg.append("g")
-            .attr("class", "areas")
-
-        areas
-            .selectAll("path")
-            .data(series2020)
-            .join("path")
-            .attr("class", d =>  {
-                console.log(d)
-                return d.key
-            })
-            .attr("fill", d => color(d.key))
-            .attr("d", area)
-
 
         svg.append("text")
             .attr("class", "label")
@@ -245,16 +253,16 @@ dance -->
 
 
         function update() {
-
+            console.log("update")
             if (year_state == 2020) {
                 year_state = 2009
                 dance(series2009)
-                // hed.html("U.S. Age Distribution, <span class='highlight'>In 2010</span>")
+                hed.html("<span class='highlight'>2009</span>")
 
             } else {
                 year_state = 2020
                 dance(series2020)
-                // hed.html("U.S. Age Distribution, <span class='highlight'>In 2019</span>")
+                hed.html("<span class='highlight'>2020</span>")
             }
 
         }
@@ -263,19 +271,18 @@ dance -->
             areas
                 .selectAll(".path")
                 .data(filtered_data, d => d.year)
-                .join("path")
-                .attr("class", d =>  {
-                    return d.key
-                })
-                .attr("fill", d => color(d.key))
-                .attr("d", area)
+                .join("path") 
                 .transition()
                 .duration(500)
                 .ease(d3.easeLinear)
-                .x(d => x(d.data.Percentile))
-                .y0(d => y(d[0]))
-                .y1(d => y(d[1]))
-                
+                .attr("class", d =>  {return d.key})
+                .attr("fill", d => color(d.key))
+                .attr("d", area)
+                // .attr("x", d => x(d.data.Percentile))
+                // .attr("y0", d => y(d[0]))
+                // .attr("y1", d => y(d[1]))
+         
+
         }
 
         var timer = d3.interval(update, 1000) //in milliseconds
