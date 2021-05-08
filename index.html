@@ -77,6 +77,7 @@ dance -->
 </head>
 
 <body>
+    <div class="container"></div>
     <div class="chart-container">
         <h1 class="headline">
             <span class='highlight'>2019</span>
@@ -162,26 +163,17 @@ dance -->
             .y0(d => y(d[0]))
             .y1(d => y(d[1]))
 
-        let area2 = d3.area()
-            .x(d => x(d.data.Percentile))
-            .y0(d => y(d[0]))
-            .y1(d => y(d[1]))
-
         let hed = d3.select(".headline")
 
         let areas = svg.append("g")
-            .attr("class", "areas")
 
         areas
             .selectAll("path")
             .data(series2020)
             .join("path")
-            .attr("class", d =>  {
-                console.log(d)
-                return d.key
-            })
-            .attr("fill", d => color(d.key))
             .attr("d", area)
+            .style("fill", d => color(d.key))
+
 
 
         let xAxisSettings = d3.axisBottom(x)
@@ -269,7 +261,7 @@ dance -->
 
         function dance(filtered_data) {
             areas
-                .selectAll(".path")
+                .selectAll("path")
                 .data(filtered_data, d => d.year)
                 .join("path") 
                 .transition()
@@ -289,3 +281,56 @@ dance -->
     })
 
 </script>
+
+
+<script type="module">
+    // Import Observable runtime and the @d3/color-legend notebook
+    import {Runtime} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+    import d3_colorLegend from "https://api.observablehq.com/@d3/color-legend.js?v=3";
+    
+    let sel_cols = [
+            "Medicaid",
+            "Medicare",
+            "Medicare+Medicaid",
+            "Employer",
+            "Uninsured",
+            "Direct Purchase",
+            "Subsidized Exchange",
+            "CHIP",
+            "Military",
+            "Other"]
+
+        let sel_colors = [
+            "#f44336", // "Medicaid",
+            "#FF9800", // "Medicare",
+            "#FDD835", // "Medicare+Medicaid",
+            "#FFF8E1", // "Employer",
+            "#26A69A", // "Uninsured",
+            "#4DD0E1", // "Direct Purchase",
+            "#F06292", // "Subsidized Exchange",
+            "#5C6BC0", // "CHIP",
+            "#90A4AE", // "Military",
+            "#E0E0E0"  // "Other"
+        ]
+    
+    // Example chart data copied from https://observablehq.com/@d3/stacked-area-chart
+    const color = d3.scaleOrdinal()
+        .domain(sel_cols)
+        .range(sel_colors)
+    const margin = ({top: 20, right: 0, bottom: 30, left: 140})
+    
+    // Container element into which the swatches will render
+    const container = document.querySelector(".container")
+    
+    renderSwatches(container)
+      
+    async function renderSwatches(el) {
+      // Get the value of the "swatches" notebook cell, which is the function we want, which returns a DOM element
+      const module = new Runtime().module(d3_colorLegend);
+      const swatches = await module.value("swatches");
+      
+      // Finally, call `swatches` with our options and append it to the container
+      const element = swatches({color, marginLeft: margin.left, columns: "180px"});
+      el.appendChild(element);
+    }
+    </script>
